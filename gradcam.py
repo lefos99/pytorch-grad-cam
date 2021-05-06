@@ -68,8 +68,7 @@ def preprocess_image(img):
         np.ascontiguousarray(np.transpose(preprocessed_img, (2, 0, 1)))
     preprocessed_img = torch.from_numpy(preprocessed_img)
     preprocessed_img.unsqueeze_(0)
-    input = preprocessed_img.requires_grad_(True)
-    return input
+    return preprocessed_img.requires_grad_(True)
 
 
 def show_cam_on_image(img, mask):
@@ -100,7 +99,7 @@ class GradCam:
         else:
             features, output = self.extractor(input)
 
-        if index == None:
+        if index is None:
             index = np.argmax(output.cpu().data.numpy())
 
         one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
@@ -177,12 +176,8 @@ class GuidedBackpropReLUModel:
         return self.model(input)
 
     def __call__(self, input, index=None):
-        if self.cuda:
-            output = self.forward(input.cuda())
-        else:
-            output = self.forward(input)
-
-        if index == None:
+        output = self.forward(input.cuda()) if self.cuda else self.forward(input)
+        if index is None:
             index = np.argmax(output.cpu().data.numpy())
 
         one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
